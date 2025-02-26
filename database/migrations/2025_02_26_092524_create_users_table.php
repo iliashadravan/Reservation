@@ -17,11 +17,12 @@ return new class extends Migration
             $table->string('lastname');
             $table->string('phone')->unique();
             $table->string('password');
-            $table->boolean('is_admin')->default(false);
+            $table->enum('role', ['admin', 'doctor', 'patient'])->default('patient');
             $table->boolean('is_active')->default(true);
             $table->string('email')->unique();
             $table->timestamps();
         });
+
     }
 
     /**
