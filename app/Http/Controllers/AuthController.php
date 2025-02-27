@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthController\ForgetPasswordRequest;
 use App\Http\Requests\AuthController\LoginRequest;
 use App\Http\Requests\AuthController\RegisterRequest;
+use App\Http\Requests\AuthController\UpdateProfileRequest;
 use App\Models\User;
 use App\Service\SmsService;
 use Illuminate\Support\Facades\Auth;
@@ -13,39 +14,46 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request){
-
+    public function register(RegisterRequest $request)
+    {
         $user = User::create([
             'firstname' => $request->get('firstname'),
             'lastname'  => $request->get('lastname'),
             'email'     => $request->get('email'),
             'phone'     => $request->get('phone'),
             'password'  => Hash::make($request->get('password')),
-
         ]);
+
         return response()->json([
             'success' => true,
-            'user'    => $user,
-            'massege' => 'Register successfully'
-        ]);
+            'message' => 'User registered successfully!',
+            'user'    => $user
+        ], 201);
     }
+
     public function login(LoginRequest $request, SmsService $smsService)
     {
         $user = User::where('phone', $request->phone)->first();
 
         if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
         }
 
         if (!$user->is_active) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sorry, your account is deactivated.',
+                'message' => 'User is inactive'
             ], 403);
         }
 
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -56,11 +64,14 @@ class AuthController extends Controller
         );
 
         return response()->json([
-            'user' => $user,
-            'token' => $token
+            'success' => true,
+            'message' => 'Login successful',
+            'user'    => $user,
+            'token'   => $token
         ]);
     }
-    public function updateProfile(RegisterRequest $request)
+
+    public function updateProfile(UpdateProfileRequest $request)
     {
         $user = Auth::user();
 
@@ -74,8 +85,8 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Profile updated successfully!',
-            'user' => $user,
+            'message' => 'Profile updated successfully',
+            'user'    => $user
         ]);
     }
 
@@ -86,7 +97,7 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found!'
+                'message' => 'User not found'
             ], 404);
         }
 
