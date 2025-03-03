@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Doctor;
 
 use App\Http\Requests\Request;
+use Illuminate\Validation\Rule;
+
 
 class storeRequest extends Request
 {
@@ -21,11 +23,19 @@ class storeRequest extends Request
      */
     public function rules(): array
     {
+
         return [
-            'doctor_id'  => 'required|exists:doctors,id',
-            'date'       => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time'   => 'required|date_format:H:i|after:start_time',
+            'date' => 'required|date|after_or_equal:today',
+            'start_time' => [
+                'required',
+                'date_format:H:i',
+                Rule::unique('doctor_schedules', 'start_time')
+                    ->where(function ($query) {
+                        return $query->where('doctor_id', auth()->id());
+                    })->where('date', request('date'))
+            ],
+            'end_time' => 'required|date_format:H:i|after:start_time',
         ];
+
     }
 }

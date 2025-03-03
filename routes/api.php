@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Middleware\CheckIsAdmin;
 use Illuminate\Support\Facades\Route;
@@ -24,5 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
        Route::get('/doctor-schedules', [DoctorScheduleController::class, 'index']);
        Route::post('/doctor-schedules', [DoctorScheduleController::class, 'store']);
        Route::delete('/doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy']);
+       Route::post('/complete-profile', [DoctorController::class, 'completeProfile']);
+
    });
 });
