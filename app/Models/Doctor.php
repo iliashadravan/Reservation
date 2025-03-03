@@ -25,3 +25,4 @@ class Doctor extends Model
     }
 
 }
+
