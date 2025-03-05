@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserController\reserveRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
@@ -19,17 +20,40 @@ class PatientAppointmentController extends Controller
         ]);
     }
 
-    public function availableSchedules($doctor_id)
+    public function availableTimeSlots($schedule_id)
     {
-        $schedules = DoctorSchedule::where('doctor_id', $doctor_id)->get();
+        $schedule = DoctorSchedule::find($schedule_id);
+
+        if (!$schedule) {
+            return response()->json(['success' => false, 'message' => 'برنامه‌ای یافت نشد.'], 404);
+        }
+
+        $start = strtotime($schedule->start_time);
+        $end = strtotime($schedule->end_time);
+        $interval = 30 * 60;
+
+        $timeSlots = [];
+        for ($time = $start; $time < $end; $time += $interval) {
+            $formattedTime = date('H:i', $time);
+
+            $isBooked = Appointment::where('schedule_id', $schedule->id)
+                ->where('appointment_time', $formattedTime)
+                ->exists();
+
+            $timeSlots[] = [
+                'time' => $formattedTime,
+                'available' => !$isBooked
+            ];
+        }
 
         return response()->json([
             'success' => true,
-            'schedules' => $schedules
+            'time_slots' => $timeSlots
         ]);
     }
 
-    public function Reserve(Request $request)
+
+    public function reserve(reserveRequest $request)
     {
         $user = auth()->user();
 
@@ -40,24 +64,25 @@ class PatientAppointmentController extends Controller
             ], 403);
         }
 
-        $request->validate([
-            'schedule_id' => 'required|exists:doctor_schedules,id'
-        ]);
 
         $schedule = DoctorSchedule::find($request->schedule_id);
 
-        if (Appointment::where('schedule_id', $schedule->id)->exists()) {
+        if (Appointment::where('schedule_id', $schedule->id)
+            ->where('appointment_time', $request->appointment_time)
+            ->exists()) {
             return response()->json(['success' => false, 'message' => 'این زمان قبلاً رزرو شده است.']);
         }
 
         $appointment = Appointment::create([
-            'user_id'     => $user->id,
-            'doctor_id'   => $schedule->doctor_id,
-            'schedule_id' => $schedule->id
+            'user_id'          => $user->id,
+            'doctor_id'        => $schedule->doctor_id,
+            'schedule_id'      => $schedule->id,
+            'appointment_time' => $request->appointment_time
         ]);
 
         return response()->json(['success' => true, 'appointment' => $appointment]);
     }
+
 
     public function myAppointments()
     {

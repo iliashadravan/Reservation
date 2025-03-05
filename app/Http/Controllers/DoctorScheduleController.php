@@ -35,7 +35,6 @@ class DoctorScheduleController extends Controller
     }
 
 
-
     public function store(StoreRequest $request)
     {
         $user = auth()->user();
@@ -55,11 +54,34 @@ class DoctorScheduleController extends Controller
             ], 400);
         }
 
+        $date      = $request->input('date');
+        $startTime = $request->input('start_time');
+        $endTime   = $request->input('end_time');
+
+        $overlappingSchedule = DoctorSchedule::where('doctor_id', $doctor->id)
+            ->where('date', $date)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('start_time', [$startTime, $endTime])
+                    ->orWhereBetween('end_time', [$startTime, $endTime])
+                    ->orWhere(function ($q) use ($startTime, $endTime) {
+                        $q->where('start_time', '<=', $startTime)
+                            ->where('end_time', '>=', $endTime);
+                    });
+            })
+            ->exists();
+
+        if ($overlappingSchedule) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This time slot overlaps with an existing schedule.'
+            ], 400);
+        }
+
         $schedule = DoctorSchedule::create([
             'doctor_id'  => $doctor->id,
-            'date'       => $request->input('date'),
-            'start_time' => $request->input('start_time'),
-            'end_time'   => $request->input('end_time'),
+            'date'       => $date,
+            'start_time' => $startTime,
+            'end_time'   => $endTime,
         ]);
 
         return response()->json([
@@ -67,7 +89,6 @@ class DoctorScheduleController extends Controller
             'schedule' => $schedule
         ]);
     }
-
 
     public function destroy(Request $request)
     {
