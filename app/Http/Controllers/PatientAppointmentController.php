@@ -13,8 +13,7 @@ class PatientAppointmentController extends Controller
 {
     public function listDoctors()
     {
-        $doctors = Doctor::with('user:id,name')->get();
-
+        $doctors = Doctor::with('user')->get();
         return response()->json([
             'success' => true,
             'doctors' => $doctors

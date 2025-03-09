@@ -9,7 +9,9 @@ class Doctor extends Model
     protected $fillable = [
         'user_id',
         'specialty',
-        'clinic_address'
+        'clinic_address',
+        'doctor_id',
+
     ];
     protected $casts = [
         'available_times' => 'array',
@@ -22,6 +24,10 @@ class Doctor extends Model
     public function schedules()
     {
         return $this->hasMany(DoctorSchedule::class);
+    }
+    public function patients()
+    {
+        return $this->hasMany(Patient::class);
     }
 
 }
