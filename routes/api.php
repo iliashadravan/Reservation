@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('doctor')->group(function () {
+        Route::get('/patients', [DoctorController::class, 'listPatients']);
         Route::get('/doctor-schedules', [DoctorScheduleController::class, 'index']);
         Route::post('/doctor-schedules', [DoctorScheduleController::class, 'store']);
         Route::delete('/doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy']);

@@ -16,12 +16,14 @@ class Appointment extends Model
     {
         return $this->belongsTo(Doctor::class);
     }
-    public function schedule()
-    {
-        return $this->belongsTo(DoctorSchedule::class);
-    }
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function schedule()
+    {
+        return $this->belongsTo(DoctorSchedule::class, 'schedule_id');
+    }
+
 }

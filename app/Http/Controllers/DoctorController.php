@@ -3,11 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Doctor\CompleteProfileRequest;
+use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 
 class DoctorController extends Controller
 {
+
+    public function listPatients()
+    {
+
+        $user = auth()->user();
+        if ($user->doctor) {
+            $appointments = Appointment::where('doctor_id', $user->doctor->id)->with(['user', 'schedule'])->get();
+            return response()->json($appointments);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
     public function completeProfile(CompleteProfileRequest $request)
     {
         $user = auth()->user();
