@@ -6,6 +6,7 @@ use App\Http\Requests\UserController\reserveRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
+use App\Models\Prescription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -109,4 +110,17 @@ class PatientAppointmentController extends Controller
             'appointments' => $appointments
         ]);
     }
+    public function myPrescriptions()
+    {
+        $user = auth()->user();
+
+        $prescriptions = Prescription::where('user_id', $user->id)
+            ->get(['medications', 'instructions']);
+
+        return response()->json([
+            'success' => true,
+            'prescriptions' => $prescriptions
+        ]);
+    }
+
 }

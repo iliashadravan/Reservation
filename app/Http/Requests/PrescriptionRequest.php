@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Doctor;
+namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
 
-class medicalRecordRequest extends Request
+class PrescriptionRequest extends Request
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,7 +22,9 @@ class medicalRecordRequest extends Request
     public function rules(): array
     {
         return [
-            'medical_record' => 'required|string',
+            'user_id'       => 'required|exists:users,id',
+            'medications'   => 'required|string',
+            'instructions'  => 'nullable|string',
         ];
     }
 }

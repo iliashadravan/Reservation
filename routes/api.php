@@ -27,6 +27,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/schedule/available-times/{schedule_id}', [PatientAppointmentController::class, 'availableTimeSlots']);
         Route::post('/appointment/reserve', [PatientAppointmentController::class, 'reserve']);
         Route::get('/appointments/my', [PatientAppointmentController::class, 'myAppointments']);
+        Route::get('/my-prescriptions', [PatientAppointmentController::class, 'myPrescriptions']);
     });
 
     Route::prefix('doctor')->group(function () {
@@ -35,6 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/doctor-schedules', [DoctorScheduleController::class, 'store']);
         Route::delete('/doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy']);
         Route::post('/complete-profile', [DoctorController::class, 'completeProfile']);
-
+        Route::post('/prescription', [DoctorController::class, 'addPrescription']);
+        Route::get('/prescription', [DoctorController::class, 'getUserPrescriptions']);
     });
 });
