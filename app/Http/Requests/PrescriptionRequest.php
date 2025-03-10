@@ -22,9 +22,12 @@ class PrescriptionRequest extends Request
     public function rules(): array
     {
         return [
-            'user_id'       => 'required|exists:users,id',
-            'medications'   => 'required|string',
-            'instructions'  => 'nullable|string',
+            'user_id'            => 'required|exists:users,id',
+            'medications'        => 'required|string',
+            'instructions'       => 'nullable|string',
+            'medication_times'   => 'required|array',
+            'medication_times.*' => 'required|string',
+            'interval'           => 'nullable|integer',
         ];
     }
 }

@@ -11,7 +11,9 @@ class Prescription extends Model
         'doctor_id',
         'patient_id',
         'instructions',
-        'medications'
+        'medications',
+        'medication_times',
+        'interval'
 
     ];
     public function doctor()

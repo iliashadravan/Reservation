@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->json('medication_times');
+            $table->integer('interval')->nullable();
             $table->text('medications');
             $table->text('instructions');
             $table->timestamps();
