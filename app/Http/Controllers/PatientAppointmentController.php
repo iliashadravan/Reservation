@@ -21,12 +21,18 @@ class PatientAppointmentController extends Controller
         ]);
     }
 
-    public function availableTimeSlots($schedule_id)
+    public function availableTimeSlots($doctor_id, $date)
     {
-        $schedule = DoctorSchedule::find($schedule_id);
+        if (!$doctor_id || !$date) {
+            return response()->json(['success' => false, 'message' => 'لطفاً پزشک و تاریخ را مشخص کنید.'], 400);
+        }
+
+        $schedule = DoctorSchedule::where('doctor_id', $doctor_id)
+            ->where('date', $date)
+            ->first();
 
         if (!$schedule) {
-            return response()->json(['success' => false, 'message' => 'برنامه‌ای یافت نشد.'], 404);
+            return response()->json(['success' => false, 'message' => 'برنامه‌ای برای این تاریخ یافت نشد.'], 404);
         }
 
         date_default_timezone_set('Asia/Tehran');
@@ -52,6 +58,8 @@ class PatientAppointmentController extends Controller
             'time_slots' => $timeSlots
         ]);
     }
+
+
 
     public function reserve(reserveRequest $request)
     {

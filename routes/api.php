@@ -24,7 +24,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::prefix('user')->group(function () {
         Route::get('/doctors', [PatientAppointmentController::class, 'listDoctors']);
-        Route::get('/schedule/available-times/{schedule_id}', [PatientAppointmentController::class, 'availableTimeSlots']);
+        Route::get('/schedule/available-times/{doctor_id}/{date}', [PatientAppointmentController::class, 'availableTimeSlots']);
         Route::post('/appointment/reserve', [PatientAppointmentController::class, 'reserve']);
         Route::get('/appointments/my', [PatientAppointmentController::class, 'myAppointments']);
         Route::get('/my-prescriptions', [PatientAppointmentController::class, 'myPrescriptions']);
