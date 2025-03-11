@@ -6,6 +6,7 @@ use App\Http\Requests\AuthController\ForgetPasswordRequest;
 use App\Http\Requests\AuthController\LoginRequest;
 use App\Http\Requests\AuthController\RegisterRequest;
 use App\Http\Requests\AuthController\UpdateProfileRequest;
+use App\Http\Requests\AuthController\verifyOTPRequest;
 use App\Models\User;
 use App\Service\SmsService;
 use Illuminate\Support\Facades\Auth;
@@ -36,32 +37,48 @@ class AuthController extends Controller
         $user = User::where('phone', $request->phone)->first();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
 
         if (!$user->is_active) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User is inactive'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'User is inactive'], 403);
         }
 
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials'
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $otpCode = rand(10000, 99999);
+        $user->update([
+            'otp_code' => Hash::make($otpCode),
+            'otp_expires_at' => now()->addMinutes(2)
+        ]);
 
         $smsService->sendSms(
             $user->phone,
-            "سلام {$user->firstname}، شما در تاریخ " . now()->format('Y-m-d') . " ساعت " . now()->format('H:i') . " وارد شدید."
+            "کد ورود شما: {$otpCode}. این کد تا 2 دقیقه معتبر است."
         );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP sent to your phone'
+        ]);
+    }
+    public function verifyOTP(verifyOTPRequest $request)
+    {
+
+        $user = User::where('phone', $request->phone)
+            ->where('otp_expires_at', '>', now())
+            ->first();
+
+        if (!$user || !Hash::check($request->otp_code, $user->otp_code)) {
+            return response()->json(['success' => false, 'message' => 'کد تأیید اشتباه است یا منقضی شده.'], 401);
+        }
+
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        $user->update(['otp_code' => null, 'otp_expires_at' => null]);
 
         return response()->json([
             'success' => true,
