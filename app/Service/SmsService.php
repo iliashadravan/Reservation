@@ -3,7 +3,6 @@
 
 namespace App\Service;
 
-use App\Models\User;
 use Kavenegar\KavenegarApi;
 
 class SmsService
@@ -19,24 +18,6 @@ class SmsService
     {
         try {
             $sender = "10001000700100";
-            $this->api->Send($sender, $receptor, $message);
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-    public function sendSmsToPatient($userId, $message)
-    {
-        try {
-            $user = User::find($userId);
-
-            if (!$user) {
-                return false;
-            }
-
-            $receptor = $user->phone_number;
-            $sender = "10001000700100";
-
             $this->api->Send($sender, $receptor, $message);
             return true;
         } catch (\Exception $e) {

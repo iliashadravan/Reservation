@@ -37,6 +37,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy']);
         Route::post('/complete-profile', [DoctorController::class, 'completeProfile']);
         Route::post('/prescription', [DoctorController::class, 'addPrescription']);
-        Route::get('/prescription', [DoctorController::class, 'getUserPrescriptions']);
     });
 });
