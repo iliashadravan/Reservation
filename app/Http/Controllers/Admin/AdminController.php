@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminController\ChangeRoleRequest;
+use App\Http\Requests\AdminController\UpdateProfileRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -20,16 +22,36 @@ class AdminController extends Controller
             ], 403);
         }
 
-        $users = User::select('id', 'firstname', 'lastname', 'email', 'phone', 'role')->get();
+        $query = User::query();
+
+        if ($request->has('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('firstname', 'like', "%{$search}%")
+                    ->orWhere('lastname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->select('id', 'firstname', 'lastname', 'email', 'phone', 'role', 'is_active', 'created_at', 'last_login')
+            ->get();
 
         return response()->json([
             'success' => true,
-            'status' => 200,
             'users' => $users,
         ]);
     }
 
-    public function setRole(Request $request)
+    public function setRole(ChangeRoleRequest $request)
     {
         $admin = Auth::user();
 
@@ -40,7 +62,7 @@ class AdminController extends Controller
             ], 403);
         }
 
-        $user = User::where('id', $request->user_id)->first();
+        $user = User::find($request->user_id);
 
         if (!$user) {
             return response()->json([
@@ -65,13 +87,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request, User $user)
+    public function updateProfile(UpdateProfileRequest $request, User $user)
     {
-        $request->validate([
-            'firstname'  => 'required|string|max:255',
-            'lastname'   => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
-        ]);
 
         if (auth()->user()->role !== 'admin' && auth()->id() !== $user->id) {
             return response()->json([
@@ -102,11 +119,52 @@ class AdminController extends Controller
             ], 403);
         }
 
+        if ($user->role === 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete another admin'
+            ], 403);
+        }
+
         $user->delete();
 
         return response()->json([
             'success' => true,
             'message' => 'User deleted successfully'
+        ]);
+    }
+
+    public function toggleActive(User $user)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User status updated successfully',
+            'is_active' => $user->is_active
+        ]);
+    }
+
+    public function show(User $user)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access'
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'user' => $user
         ]);
     }
 }

@@ -16,13 +16,19 @@ Route::prefix('auth')->group(function () {
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/reset-password', [AuthController::class, 'forgotPassword']);
 });
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('admin')->middleware([CheckIsAdmin::class])->group(function () {
-        Route::get('', [AdminController::class, 'index']);
-        Route::post('/set-role', [AdminController::class, 'setRole']);
-        Route::post('/delete-user', [AdminController::class, 'destroy']);
-        Route::post('update-profile', [AdminController::class, 'updateProfile']);
+        Route::prefix('users')->group(function () {
+            Route::get('', [AdminController::class, 'index']);
+            Route::get('/{user}', [AdminController::class, 'show']);
+            Route::post('/set-role', [AdminController::class, 'setRole']);
+            Route::patch('/{user}', [AdminController::class, 'updateProfile']);
+            Route::delete('/{user}', [AdminController::class, 'destroy']);
+            Route::patch('/toggle-active/{user}', [AdminController::class, 'toggleActive']);
+        });
     });
+
     Route::prefix('user')->group(function () {
         Route::get('/doctors', [PatientAppointmentController::class, 'listDoctors']);
         Route::get('/schedule/available-times/{doctor_id}/{date}', [PatientAppointmentController::class, 'availableTimeSlots']);
