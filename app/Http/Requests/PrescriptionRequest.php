@@ -28,6 +28,8 @@ class PrescriptionRequest extends Request
             'medication_times'   => 'required|array',
             'medication_times.*' => 'required|string',
             'interval'           => 'nullable|integer',
+            'disease_id'         => 'required|exists:diseases,id',
+
         ];
     }
 }

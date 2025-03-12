@@ -42,7 +42,7 @@ class AdminController extends Controller
             });
         }
 
-        $users = $query->select('id', 'firstname', 'lastname', 'email', 'phone', 'role', 'is_active', 'created_at', 'last_login')
+        $users = $query->select('id', 'firstname', 'lastname', 'email', 'phone', 'role', 'is_active', 'created_at')
             ->get();
 
         return response()->json([
